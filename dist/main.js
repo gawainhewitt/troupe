@@ -1,4 +1,4 @@
-var radiusRatio = 2; // number that sets the radius relative to the screen
+var radiusRatio = 1.5; // number that sets the radius relative to the screen
 var radius; // variable to store the actual radius in
 var backgroundColour;
 var onColour = 'rgb(255,255,0)';
