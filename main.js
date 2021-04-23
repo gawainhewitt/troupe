@@ -46,8 +46,7 @@ function setup() {  // setup p5
 
     // *** add vanilla JS event listeners for touch which i want to use in place of the p5 ones as I believe that they are significantly faster
     let el = document.getElementById("p5parent");
-    el.addEventListener("mousedown", handleMouseDown);
-    el.addEventListener("mouseup", handleMouseUp);
+    el.addEventListener("click", handleClick);
 
     setRadius();
 
@@ -84,7 +83,7 @@ function setRadius() {
     }
 }
 
-function handleMouseDown() {
+function handleClick() {
     let d = dist(mouseX, mouseY, width/2, height/2);
     if (d < radius/2) {
       buttonPressed();
@@ -92,23 +91,15 @@ function handleMouseDown() {
     }
 }
 
-function handleMouseUp() {
-    if(buttonState){
-        buttonReleased();
-    }
-    buttonState = false;
-}
-
 function buttonPressed() {
+    sampler.triggerAttackRelease("A3", '4n');
     console.log("click");
     buttonColour = onColour;
-    sampler.triggerAttackRelease("A3", '4n');
+    setTimeout(() => {
+        buttonColour = offColour;
+      }, 1000);
 }
 
-function buttonReleased() {
-    console.log("noclick");
-    buttonColour = offColour;
-}
 
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min) ) + min;
