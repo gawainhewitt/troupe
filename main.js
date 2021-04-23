@@ -53,6 +53,11 @@ function setup() {  // setup p5
     sampler = new Tone.Sampler({
         urls: {
             A3: breathSample,
+            C1: "speach1.mp3",
+            C2: "speach2.mp3",
+            C3: "speach3.mp3",
+            C4: "speach4.mp3",
+            C5: "speach5.mp3",
         },
         baseUrl: "/sounds/",
         // 	onload: () => {
@@ -97,7 +102,7 @@ function buttonPressed() {
     buttonColour = onColour;
     setTimeout(() => {
         buttonColour = offColour;
-      }, 1000);
+      }, 300);
 }
 
 

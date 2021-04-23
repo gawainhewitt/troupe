@@ -97,7 +97,7 @@ function buttonPressed() {
     buttonColour = onColour;
     setTimeout(() => {
         buttonColour = offColour;
-      }, 1000);
+      }, 300);
 }
 
 
