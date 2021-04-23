@@ -53,6 +53,11 @@ function setup() {  // setup p5
     sampler = new Tone.Sampler({
         urls: {
             A3: breathSample,
+            C1: "speach1.mp3",
+            C2: "speach2.mp3",
+            C3: "speach3.mp3",
+            C4: "speach4.mp3",
+            C5: "speach5.mp3",
         },
         baseUrl: "/sounds/",
         // 	onload: () => {
@@ -92,7 +97,14 @@ function handleClick() {
 }
 
 function buttonPressed() {
+    let whichSound = getRndInteger(0, 10);
+
+    if(whichSound === 9){
+        let whichSpeach = getRndInteger(1, 6);
+        sampler.triggerAttackRelease(`C${whichSpeach}`);
+    }else{
     sampler.triggerAttackRelease("A3", '4n');
+    }
     console.log("click");
     buttonColour = onColour;
     setTimeout(() => {

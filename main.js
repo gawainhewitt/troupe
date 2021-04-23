@@ -97,7 +97,14 @@ function handleClick() {
 }
 
 function buttonPressed() {
+    let whichSound = getRndInteger(0, 10);
+
+    if(whichSound === 9){
+        let whichSpeach = getRndInteger(1, 6);
+        sampler.triggerAttackRelease(`C${whichSpeach}`);
+    }else{
     sampler.triggerAttackRelease("A3", '4n');
+    }
     console.log("click");
     buttonColour = onColour;
     setTimeout(() => {
