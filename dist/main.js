@@ -1,5 +1,9 @@
 //why am i getting away without having tone.start?
 
+// if I add a second buffer can i toggle between them, so that one is loading when the other is playing?
+
+// also perhaps have it set so you hear all the recordings in a random order before it returns to the beginning
+
 var radiusRatio = 1.5; // number that sets the radius relative to the screen
 var radius; // variable to store the actual radius in
 var backgroundColour = 'rgb(0, 255, 0)';
@@ -7,16 +11,23 @@ var onColour = 'rgb(255,255,0)';
 var offColour = 'rgb(0, 0, 255)';
 var buttonColour;
 var buttonState = false;
-var whichSpeaker; // which of the samples?
+var whichSound; // which of the samples?
 var speechSample; //current sample
 var theVolume = -6;
 const player = new Tone.Player().toDestination();
 const toneWaveForm = new Tone.Waveform();
+toneWaveForm.size = 128;
 player.connect(toneWaveForm);
+var buffer0;
 var buffer1;
-var interfaceState = 0; // 0 displays the text loading, 1 is a button, 2 is a visualisation of the sound
-var lastSound;
+var interfaceState = 0; // 0 displays the text loading, 1 is a button, 2 is a visualisation of the sound, 3 is error loading sound to buffer
+var usedSounds = new Array;
 var cnvDimension;
+var bufferToPlay = buffer1;
+var lastBuffer;
+var currentBuffer;
+var numberOfSamples = 23;
+let visualisationSize;
 
 
 function preload(){
@@ -31,6 +42,7 @@ function setup() {  // setup p5
     let masterRight = divPos.right; // distance from left of screen to the right edge of bounding box
     cnvDimension = masterRight - masterLeft; // size of div -however in some cases this is wrong, so i am now using css !important to set the size and sca;ing - but have kept this to work out size of other elements if needed
     buttonColour = offColour;
+    visualisationSize = height*2;
 
     console.log("canvas size = " + cnvDimension);
 
@@ -61,23 +73,59 @@ function setup() {  // setup p5
       );
 }
 
+var rectangleX, rectangleY, rectangleWidth, rectangleHeight;
+
 function draw() {
+    rectangleX = width/2 - radius/2;
+    rectangleY = height/2 - radius/4;
+    rectangleWidth = radius;
+    rectangleHeight = radius/2;
     background(backgroundColour); // background
     //imageMode(CENTER);
     if(interfaceState === 0){
+        noStroke();
         fill(buttonColour);
-        rect(width/2 - radius/2, height/2 - radius/4, radius, radius/2);
+        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
         fill(150);
         textAlign(CENTER, CENTER);
         textSize(cnvDimension/20);
         text("Loading", width/2, height/2);
-    }
-    if(interfaceState === 1){
+    }else if(interfaceState === 1){
+        noStroke();
         fill(buttonColour);
         ellipse(width/2, height/2, radius);
-    }if(interfaceState === 2){
-        text("Audio Visualisation", width/2, height/2);
-        console.log(toneWaveForm.getValue());
+    }else if(interfaceState === 2){
+        stroke(255, 0, 255);
+        strokeWeight(10);
+        let x = rectangleX;
+        let y = rectangleY + (rectangleHeight/2);
+        let startX = x;
+        let startY = y;
+        let endX;
+        let endY;
+        let visualisation = toneWaveForm.getValue();
+        for(let i = 0; i < visualisation.length-1; i++){
+            // point(x, y + (visualisation[i]*visualisationSize));
+            // x = x + rectangleWidth/visualisation.length;
+
+            startY = y + (visualisation[i]*visualisationSize);
+            endX = startX + rectangleWidth/visualisation.length;
+            endY = y + (visualisation[i+1]*visualisationSize);
+
+            line(startX, startY, endX, endY);
+
+            startX = startX + rectangleWidth/visualisation.length;
+        }
+        //text("Audio Visualisation", width/2, height/2);
+        //console.log(toneWaveForm.getValue());
+    }else if(interfaceState === 3){
+        noStroke();
+        fill(buttonColour);
+        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
+        fill(150);
+        textAlign(CENTER, CENTER);
+        textSize(cnvDimension/30);
+        text("Network Problems, click to try again", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
     }
 }
 
@@ -101,38 +149,96 @@ function handleClick() {
             buttonPressed();
             buttonState = true;
         }
+    }else if(interfaceState === 3){
+            console.log("network click");
+            interfaceState = 0;
+            assignSoundToPlayer();
     }
 }
 
 function buttonPressed() {
     player.start();
+    lastBuffer = currentBuffer;
+    console.log(`lastBuffer = ${lastBuffer}`);
     console.log("click");
     interfaceState = 2;
+    chooseSample();
     }
 
 
 function getRndInteger(min, max) {
-    return Math.floor(Math.random() * (max - min) ) + min;
+    return Math.floor(Math.random() * (max - min +1) ) + min;
   }
 
-  function chooseSample(){
+function chooseSample(){
+    console.log(`usedSounds = ${usedSounds}`);
+    if (usedSounds.length === numberOfSamples){
+        console.log(`array full`);
+        usedSounds = [];
+    }
+
     do{
-        whichSpeaker = getRndInteger(1, 23);
-    }while(whichSpeaker === lastSound);
+        whichSound = getRndInteger(1, numberOfSamples);
+    }while(haveWeUsedSound(whichSound));
 
-    console.log(`whichSpeaker = ${whichSpeaker}`)
-    speechSample = `speech${whichSpeaker}.flac`
-    console.log(`speechSample = ${speechSample}`)
-    buffer1 = new Tone.ToneAudioBuffer(`/sounds/${speechSample}`, () => {
-        console.log("loaded");
-        player.buffer = buffer1.get();
-        interfaceState = 1;
-    })
+    usedSounds.push(whichSound);
+    console.log(`whichSound = ${whichSound}`);
+    speechSample = `speech${whichSound}.flac`;
+    console.log(`speechSample = ${speechSample}`);
+    console.log(`usedSounds = ${usedSounds}`);
 
+    assignSoundToPlayer();
+}
+
+function haveWeUsedSound(comparer) {
+    for(var i=0; i < usedSounds.length; i++) {
+        if(usedSounds[i] === comparer){
+            return true;
+        }
+    }
+    return false;
+};
+
+function assignSoundToPlayer() {
+    if(bufferToPlay === buffer1){
+        buffer0 = new Tone.ToneAudioBuffer(`/sounds/${speechSample}`, () => {
+            console.log("buffer 0 loaded");
+            bufferToPlay = buffer0;
+            currentBuffer = 0;
+            console.log(`currentBuffer = ${currentBuffer}`);
+            if (interfaceState === 0){
+                reload();
+            }
+        },
+        () => {
+            interfaceState = 3;
+            console.log(`interfaceState = ${interfaceState}`)
+        });
+    }else{
+        buffer1 = new Tone.ToneAudioBuffer(`/sounds/${speechSample}`, () => {
+            console.log("buffer 1 loaded");
+            bufferToPlay = buffer1;
+            currentBuffer = 1;
+            console.log(`currentBuffer = ${currentBuffer}`);
+            if (interfaceState === 0){
+                reload();
+            }
+        },
+        () => {
+            interfaceState = 3;
+            console.log(`interfaceState = ${interfaceState}`)
+        });
+    }
 }
 
 function reload() {
-    buffer1.dispose();
-    chooseSample();
-    interfaceState = 0;
+    console.log(`in reload`);
+    if(lastBuffer !== currentBuffer){
+        player.buffer = bufferToPlay.get();
+        interfaceState = 1;
+    }else{
+        interfaceState = 0;
+    }
+    // buffer0.dispose();
+    // chooseSample();
 }
