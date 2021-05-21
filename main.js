@@ -12,7 +12,7 @@ var offColour = 'rgb(0, 0, 255)';
 var buttonColour;
 var buttonState = false;
 var whichSound; // which of the samples?
-var speechSample; //current sample
+var theSample; //current sample
 var theVolume = -6;
 const player = new Tone.Player().toDestination();
 const toneWaveForm = new Tone.Waveform();
@@ -183,8 +183,8 @@ function chooseSample(){
 
     usedSounds.push(whichSound);
     console.log(`whichSound = ${whichSound}`);
-    speechSample = `speech${whichSound}.flac`;
-    console.log(`speechSample = ${speechSample}`);
+    theSample = `speech${whichSound}.flac`;
+    console.log(`theSample = ${theSample}`);
     console.log(`usedSounds = ${usedSounds}`);
 
     assignSoundToPlayer();
@@ -201,7 +201,7 @@ function haveWeUsedSound(comparer) {
 
 function assignSoundToPlayer() {
     if(bufferToPlay === buffer1){
-        buffer0 = new Tone.ToneAudioBuffer(`/sounds/${speechSample}`, () => {
+        buffer0 = new Tone.ToneAudioBuffer(`/sounds/${theSample}`, () => {
             console.log("buffer 0 loaded");
             bufferToPlay = buffer0;
             currentBuffer = 0;
@@ -215,7 +215,7 @@ function assignSoundToPlayer() {
             console.log(`interfaceState = ${interfaceState}`)
         });
     }else{
-        buffer1 = new Tone.ToneAudioBuffer(`/sounds/${speechSample}`, () => {
+        buffer1 = new Tone.ToneAudioBuffer(`/sounds/${theSample}`, () => {
             console.log("buffer 1 loaded");
             bufferToPlay = buffer1;
             currentBuffer = 1;
