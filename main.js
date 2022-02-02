@@ -26,7 +26,7 @@ var cnvDimension;
 var bufferToPlay = buffer1;
 var lastBuffer;
 var currentBuffer;
-var numberOfSamples = 23;
+var numberOfSamples = 23; // the number of samples that we are using
 let visualisationSize;
 
 
@@ -85,7 +85,7 @@ function draw() {
     if(interfaceState === 0){
         noStroke();
         fill(buttonColour);
-        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
+        //rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
         fill(150);
         textAlign(CENTER, CENTER);
         textSize(cnvDimension/20);
